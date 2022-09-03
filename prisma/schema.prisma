@@ -7,11 +7,7 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id String @id @default(cuid())
-}
-
-// * -- AUTH
+// * -- CORE AUTH
 model Account {
     id                String  @id @default(cuid())
     userId            String
@@ -28,6 +24,7 @@ model Account {
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@map("accounts")
 }
 
 model Session {
@@ -36,16 +33,8 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
 
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+    @@map("sessions")
 }
 
 model VerificationToken {
@@ -54,4 +43,275 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+    @@map("verification_tokens")
 }
+
+// * -- IMAGE
+model Image {
+    id        String   @id @default(cuid())
+    url       String
+    timestamp DateTime
+
+    uploaderId String
+    uploader   User   @relation(fields: [uploaderId], references: [id])
+
+    labelLogos Label[]
+
+    groupBanners Group[] @relation("group_banner")
+    groupLogos   Group[] @relation("group_logo")
+
+    artistAvatars Artist[] @relation("artist_avatar")
+    artistBanners Artist[] @relation("artist_banner")
+
+    eraCovers         Era[]         @relation("era_cover_image")
+    eraBanners        Era[]         @relation("era_banner_image")
+    collectableImages Collectable[]
+
+    @@map("images")
+}
+
+// * -- USER
+model User {
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+
+    accounts Account[]
+    sessions Session[]
+
+    uploadedImages       Image[]
+    roles                UserRole[]
+    createdCollectables  Collectable[]
+    cards                Card[]
+    favoritedColletables CollectableFavorite[]
+
+    @@map("users")
+}
+
+// * -- ROLES
+model Role {
+    id          Int    @id @default(autoincrement())
+    title       String @db.VarChar(15)
+    description String @db.Text
+    colorCode   String @db.VarChar(6)
+
+    users UserRole[]
+
+    @@map("roles")
+}
+
+// * -- USER-ROLES
+model UserRole {
+    userId  String
+    roleId  Int
+    granted DateTime
+
+    role Role @relation(fields: [roleId], references: [id])
+    user User @relation(fields: [userId], references: [id])
+
+    @@unique([userId, roleId])
+    @@map("user_roles")
+}
+
+// * -- MUSIC LABEL
+
+model Label {
+    id   String @id @default(cuid())
+    name String @db.VarChar(40)
+
+    image   Image  @relation(fields: [imageId], references: [id])
+    imageId String
+
+    artists Artist[]
+    groups  Group[]
+
+    @@map("labels")
+}
+
+// * -- GROUP
+model Group {
+    id          String  @id @default(cuid())
+    englishName String  @db.VarChar(40)
+    hangulName  String? @db.VarChar(40)
+
+    labelId String
+    label   Label  @relation(fields: [labelId], references: [id])
+
+    logoImageId   String?
+    bannerImageId String?
+
+    bannerImage Image? @relation("group_banner", fields: [bannerImageId], references: [id])
+    logoImage   Image? @relation("group_logo", fields: [logoImageId], references: [id])
+
+    eras    Era[]
+    members GroupMember[]
+
+    @@map("groups")
+}
+
+// * -- ARTIST
+model Artist {
+    id          String    @id @default(cuid())
+    englishName String    @db.VarChar(40)
+    hangulName  String?   @db.VarChar(40)
+    birthday    DateTime? @db.Date
+
+    labelId String
+    label   Label  @relation(fields: [labelId], references: [id])
+
+    avatarImageId String?
+    bannerImageId String?
+    avatar        Image?  @relation("artist_avatar", fields: [avatarImageId], references: [id])
+    banner        Image?  @relation("artist_banner", fields: [bannerImageId], references: [id])
+
+    groups         GroupMember[]
+    collaborations Collaborator[]
+    soloEras       Era[]
+
+    collectables CollectableArtist[]
+
+    @@map("artists")
+}
+
+// * -- GROUP MEMBERS
+model GroupMember {
+    group  Group  @relation(fields: [groupId], references: [id])
+    artist Artist @relation(fields: [artistId], references: [id])
+
+    groupId  String
+    artistId String
+
+    @@unique([artistId, groupId])
+    @@map("group_members")
+}
+
+// * -- ERA
+model Era {
+    id      String   @id @default(cuid())
+    title   String   @db.VarChar(40)
+    release DateTime @db.Date
+
+    group   Group?  @relation(fields: [groupId], references: [id])
+    groupId String?
+
+    artistId String?
+    artist   Artist? @relation(fields: [artistId], references: [id])
+
+    collabs Collaborator[]
+
+    cover  Image? @relation("era_cover_image", fields: [coverImageId], references: [id])
+    banner Image? @relation("era_banner_image", fields: [bannerImageId], references: [id])
+
+    coverImageId  String?
+    bannerImageId String?
+    collectables  Collectable[]
+    collections   Collection[]
+
+    @@unique([title, groupId])
+    @@unique([title, artistId])
+    @@map("eras")
+}
+
+// * -- ERA COLLABORATOR
+model Collaborator {
+    era    Era    @relation(fields: [eraId], references: [id])
+    artist Artist @relation(fields: [artistId], references: [id])
+
+    eraId    String
+    artistId String
+
+    @@unique([eraId, artistId])
+    @@map("era_collaborators")
+}
+
+model Collectable {
+    id String @id @default(cuid())
+
+    created   DateTime @default(now())
+    creatorId String
+    createdBy User     @relation(fields: [creatorId], references: [id])
+
+    imageId String
+    image   Image  @relation(fields: [imageId], references: [id])
+
+    rarity Rarity
+
+    era   Era    @relation(fields: [eraId], references: [id])
+    eraId String
+
+    collection   Collection? @relation(fields: [collectionId], references: [id])
+    collectionId String?
+
+    cards     Card[]
+    artists   CollectableArtist[]
+    favorites CollectableFavorite[]
+
+    @@map("collectables")
+}
+
+// * -- COLLECTABLE_ARTISTS
+model CollectableArtist {
+    collectable   Collectable @relation(fields: [collectableId], references: [id])
+    artist        Artist      @relation(fields: [artistId], references: [id])
+    collectableId String
+    artistId      String
+
+    @@unique([collectableId, artistId])
+    @@map("collectable_artists")
+}
+
+// * -- CARD
+enum Rarity {
+    COMMON
+    UNCOMMON
+    RARE
+    ULTRA_RARE
+    LEGENDARY
+}
+
+// * COLLECTION
+model Collection {
+    id    String @id @default(cuid())
+    title String @db.VarChar(50)
+
+    eraId        String
+    era          Era           @relation(fields: [eraId], references: [id])
+    collectables Collectable[]
+
+    @@unique([title, eraId])
+    @@map("collections")
+}
+
+// * Card
+model Card {
+    iteration Int
+
+    collectable   Collectable @relation(fields: [collectableId], references: [id])
+    collectableId String
+
+    owner   User?   @relation(fields: [ownerId], references: [id])
+    ownerId String?
+
+    @@id([collectableId, iteration])
+    @@map("cards")
+}
+
+// * Collectable Favorite
+model CollectableFavorite {
+    collectable   Collectable @relation(fields: [collectableId], references: [id])
+    user          User        @relation(fields: [userId], references: [id])
+    collectableId String
+    userId        String
+
+    @@unique([userId, collectableId])
+    @@map("collectable_favorites")
+}
+
+// TODO
+// Rolls
+// Trade Types
+// Trade Status
+// Trade Offer
+// Trade Piece
