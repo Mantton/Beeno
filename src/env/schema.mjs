@@ -8,10 +8,20 @@ import { z } from "zod";
 export const serverSchema = z.object({
   DATABASE_URL: z.string().url(),
   NODE_ENV: z.enum(["development", "test", "production"]),
+
+  // NEXT_AUTH
   NEXTAUTH_SECRET: z.string(),
   NEXTAUTH_URL: z.string().url(),
+
+  // TWITTER OAUTH
   TWITTER_CLIENT_ID: z.string(),
   TWITTER_CLIENT_SECRET: z.string(),
+
+  // GCS
+  GCS_PROJECT_ID: z.string(),
+  GCS_CLIENT_EMAIL: z.string(),
+  GCS_PRIVATE_KEY: z.string(),
+  GCS_BUCKET: z.string(),
 });
 
 /**
