@@ -12,8 +12,9 @@ export const collectorRouter = createRouter().query("get", {
         id: true,
         image: true,
         name: true,
-
         cards: true,
+        handle: true,
+        bannerImage: true,
       },
     });
   },
