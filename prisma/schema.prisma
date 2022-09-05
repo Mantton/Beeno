@@ -108,7 +108,7 @@ model Role {
 model UserRole {
     userId  String
     roleId  Int
-    granted DateTime
+    granted DateTime @default(now())
 
     role Role @relation(fields: [roleId], references: [id])
     user User @relation(fields: [userId], references: [id])

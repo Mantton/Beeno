@@ -1,18 +1,22 @@
 import { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { Fragment, useState } from "react";
+import React, { useState } from "react";
 import { trpc } from "../../utils/trpc";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { Dialog, Transition } from "@headlessui/react";
-import { BiX } from "react-icons/bi";
+import { BiCamera, BiX } from "react-icons/bi";
+import { Modal } from "../../components/modal/modal";
+import { clsx } from "clsx";
+import { useForm } from "react-hook-form";
 const CollectorPage: NextPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const id = router.query.slugs?.[0];
   const session = useSession();
   const result = trpc.useQuery(["collector.get", id ?? ""]);
+  const { register, handleSubmit } = useForm();
+
   if (!id) {
     return <div>How?</div>;
   }
@@ -25,6 +29,9 @@ const CollectorPage: NextPage = () => {
   }
   const account = result.data;
 
+  const onSubmit = (data: any) => {
+    console.log(data);
+  };
   const isOwner = session.data?.user?.id === account?.id;
   return (
     <>
@@ -61,67 +68,113 @@ const CollectorPage: NextPage = () => {
             >
               Edit Profile
             </button>
-            <Transition show={isOpen} as={Fragment}>
-              <Dialog onClose={() => setIsOpen(false)}>
-                {/*
-          Use one Transition.Child to apply one transition to the backdrop...
-        */}
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="fixed inset-0 bg-black/30" />
-                </Transition.Child>
 
-                {/*
-          ...and another Transition.Child to apply a separate transition
-          to the contents.
-        */}
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
-                >
-                  <div className="fixed inset-0 flex items-center justify-center p-4">
-                    {/* Container to center the panel */}
-                    <div className="flex min-h-full items-center justify-center w-2/3">
-                      {/* The actual dialog panel  */}
-                      <Dialog.Panel className="w-full bg-neutral-900 text-white rounded-md ">
-                        <div className="flex-col">
-                          <div className="flex justify-between items-center px-4 my-2">
-                            <div className="flex  gap-4 items-center">
-                              <button onClick={() => setIsOpen(false)}>
-                                <BiX size={"1.7rem"} />
-                              </button>
-                              <span className="font-medium">Edit Profile</span>
-                            </div>
-                            <button
-                              onClick={() => {
-                                // TODO: Save
-                                setIsOpen(false);
-                              }}
-                            >
-                              <span className="px-2 rounded-xl bg-white text-black text-sm">
-                                Done
-                              </span>
-                            </button>
-                          </div>
-                        </div>
-                      </Dialog.Panel>
+            <Modal
+              isOpen={isOpen}
+              setIsOpen={setIsOpen}
+              className="absolute w-2/3 bg-neutral-900 text-white rounded-md"
+            >
+              <div className="flex-col">
+                <div className="flex justify-between items-center px-4 my-2">
+                  <div className="flex gap-4 items-center">
+                    <button onClick={() => setIsOpen(false)}>
+                      <BiX size={"1.7rem"} />
+                    </button>
+                    <span className="font-medium">Edit Profile</span>
+                  </div>
+                  {/* <button
+                    onClick={() => {
+                      // TODO: Save
+                      setIsOpen(false);
+                    }}
+                  >
+                    <span className="px-2 py-1 rounded-xl bg-white text-black text-sm">
+                      Save
+                    </span>
+                  </button> */}
+                </div>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <div
+                    className={`h-40 bg-neutral-900 ${clsx(
+                      account?.bannerImage && account.bannerImage
+                    )}`}
+                  >
+                    <div className=" flex gap-4 h-full justify-center items-center ">
+                      <label
+                        htmlFor="a"
+                        className="bg-neutral-500/30 p-2 rounded-full items-center cursor-pointer"
+                      >
+                        <BiCamera
+                          size={"1.5rem"}
+                          strokeWidth={"0.1"}
+                          className="text-white/70"
+                        />
+                        <input
+                          id="banner-image"
+                          // ref={register}
+                          type="file"
+                          hidden
+                          {...register("banner-image")}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          //
+                        }}
+                      >
+                        <BiX
+                          size={"2rem"}
+                          strokeWidth={"0.1"}
+                          className="text-white/70"
+                        />
+                      </button>
                     </div>
                   </div>
-                </Transition.Child>
-              </Dialog>
-            </Transition>
+
+                  <div
+                    style={
+                      {
+                        backgroundImage: `url(${
+                          account?.image ??
+                          "https://aegaeon.mantton.com/ceres.jpeg"
+                        })`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "100px 100px",
+                      } as React.CSSProperties
+                    }
+                    className={clsx(
+                      "flex items-center justify-center",
+                      "h-[100px] w-[100px]",
+                      "rounded-full mx-8",
+                      "border-4 border-neutral-900"
+                    )}
+                  >
+                    <div className="flex items-center justify-center">
+                      <label
+                        htmlFor="avatar"
+                        className="bg-neutral-500/30 p-2 rounded-full  cursor-pointer "
+                      >
+                        <BiCamera
+                          size={"1.5rem"}
+                          strokeWidth={"0.1"}
+                          className="text-white/70"
+                        />
+                        <input
+                          id="avatar"
+                          type="file"
+                          hidden
+                          {...register("avater")}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <button type="submit">Submit</button>
+                  </div>
+                </form>
+              </div>
+            </Modal>
           </div>
         )}
 

@@ -10,6 +10,8 @@ export const authOptions: NextAuthOptions = {
     session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
+        session.user.handle = user.handle as string;
+        session.user.name = user.name ?? "";
       }
       return session;
     },

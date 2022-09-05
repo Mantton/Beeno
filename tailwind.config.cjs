@@ -11,6 +11,10 @@ module.exports = {
         rare: "#00c0f0",
         uncommon: "#ae2012",
         common: "#0ead69",
+        dynamic_color: "var(--color)",
+      },
+      backgroundImage: {
+        dynamic_image: "var(--url)",
       },
     },
   },

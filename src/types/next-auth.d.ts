@@ -10,7 +10,6 @@ declare module "next-auth" {
       name: string;
       image: string;
       handle: string;
-    };
-    //  & DefaultSession["user"];
+    } & DefaultSession["user"];
   }
 }
