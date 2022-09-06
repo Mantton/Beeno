@@ -50,7 +50,7 @@ model VerificationToken {
 model Image {
     id        String   @id @default(cuid())
     url       String
-    timestamp DateTime
+    timestamp DateTime @default(now())
 
     uploaderId String
     uploader   User   @relation(fields: [uploaderId], references: [id])

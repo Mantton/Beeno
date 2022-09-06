@@ -22,6 +22,9 @@ export const serverSchema = z.object({
   GCS_CLIENT_EMAIL: z.string(),
   GCS_PRIVATE_KEY: z.string(),
   GCS_BUCKET: z.string(),
+
+  // CDN
+  CDN_DOMAIN: z.string(),
 });
 
 /**

@@ -16,6 +16,6 @@ export default defineNextConfig({
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ["pbs.twimg.com"],
+    domains: ["pbs.twimg.com", "aegaeon.mantton.com"],
   },
 });

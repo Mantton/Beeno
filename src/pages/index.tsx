@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { trpc } from "../utils/trpc";
+import Image from "next/image";
 
 const Home: NextPage = () => {
   return (
@@ -38,9 +38,9 @@ const Home: NextPage = () => {
           </div>
         </div>
         <div className="m-2 ">
-          <img
+          <Image
             className="rounded-lg"
-            src="https://external-preview.redd.it/TmnsGDTHJsBepTMVDf1Zx_OXOfjsZs7haCxNBG14KKk.jpg?width=640&crop=smart&auto=webp&s=46171ceb083471338e2dd617eb9e7ed3f7c97745"
+            src="https://aegaeon.mantton.com/home.webp"
             alt="sample card"
             width="300"
             height="450"
