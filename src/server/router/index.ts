@@ -1,15 +1,16 @@
 // src/server/router/index.ts
-import { createRouter } from "./context";
-import superjson from "superjson";
-import { artistRouter } from "./artist";
-import { collectorRouter } from "./collector";
-import { imageRouter } from "./image";
+import { createRouter } from './context'
+import superjson from 'superjson'
+import { artistRouter } from './artist'
+import { collectorRouter, protectedCollectorRouter } from './collector'
+import { imageRouter } from './image'
 
 export const appRouter = createRouter()
-  .transformer(superjson)
-  .merge("artist.", artistRouter)
-  .merge("collector.", collectorRouter)
-  .merge("image.", imageRouter);
+    .transformer(superjson)
+    .merge('artist.', artistRouter)
+    .merge('collector.', collectorRouter)
+    .merge('protectedCollector.', protectedCollectorRouter)
+    .merge('image.', imageRouter)
 
 // export type definition of API
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof appRouter

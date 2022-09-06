@@ -1,1 +1,1 @@
-export type IUseState<T> = Dispatch<SetStateAction<T>>;
+export type IUseState<T> = Dispatch<SetStateAction<T>>

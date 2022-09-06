@@ -1,31 +1,31 @@
 // @ts-check
-import { z } from "zod";
+import { z } from 'zod'
 
 /**
  * Specify your server-side environment variables schema here.
  * This way you can ensure the app isn't built with invalid env vars.
  */
 export const serverSchema = z.object({
-  DATABASE_URL: z.string().url(),
-  NODE_ENV: z.enum(["development", "test", "production"]),
+    DATABASE_URL: z.string().url(),
+    NODE_ENV: z.enum(['development', 'test', 'production']),
 
-  // NEXT_AUTH
-  NEXTAUTH_SECRET: z.string(),
-  NEXTAUTH_URL: z.string().url(),
+    // NEXT_AUTH
+    NEXTAUTH_SECRET: z.string(),
+    NEXTAUTH_URL: z.string().url(),
 
-  // TWITTER OAUTH
-  TWITTER_CLIENT_ID: z.string(),
-  TWITTER_CLIENT_SECRET: z.string(),
+    // TWITTER OAUTH
+    TWITTER_CLIENT_ID: z.string(),
+    TWITTER_CLIENT_SECRET: z.string(),
 
-  // GCS
-  GCS_PROJECT_ID: z.string(),
-  GCS_CLIENT_EMAIL: z.string(),
-  GCS_PRIVATE_KEY: z.string(),
-  GCS_BUCKET: z.string(),
+    // GCS
+    GCS_PROJECT_ID: z.string(),
+    GCS_CLIENT_EMAIL: z.string(),
+    GCS_PRIVATE_KEY: z.string(),
+    GCS_BUCKET: z.string(),
 
-  // CDN
-  CDN_DOMAIN: z.string(),
-});
+    // CDN
+    CDN_DOMAIN: z.string(),
+})
 
 /**
  * Specify your client-side environment variables schema here.
@@ -33,8 +33,8 @@ export const serverSchema = z.object({
  * To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 export const clientSchema = z.object({
-  // NEXT_PUBLIC_BAR: z.string(),
-});
+    // NEXT_PUBLIC_BAR: z.string(),
+})
 
 /**
  * You can't destruct `process.env` as a regular object, so you have to do
@@ -43,5 +43,5 @@ export const clientSchema = z.object({
  * @type {{ [k in keyof z.infer<typeof clientSchema>]: z.infer<typeof clientSchema>[k] | undefined }}
  */
 export const clientEnv = {
-  // NEXT_PUBLIC_BAR: process.env.NEXT_PUBLIC_BAR,
-};
+    // NEXT_PUBLIC_BAR: process.env.NEXT_PUBLIC_BAR,
+}
