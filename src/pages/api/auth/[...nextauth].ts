@@ -1,9 +1,9 @@
+import { UserRole } from '@prisma/client'
 import NextAuth, { type NextAuthOptions } from 'next-auth'
 import TwitterProvider from 'next-auth/providers/twitter'
 
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
-import { prisma } from '../../../server/db/client'
 import { env } from '../../../env/server.mjs'
+import adapter from '../../../utils/adapter'
 
 export const authOptions: NextAuthOptions = {
     callbacks: {
@@ -12,11 +12,12 @@ export const authOptions: NextAuthOptions = {
                 session.user.id = user.id
                 session.user.handle = user.handle as string
                 session.user.name = user.name ?? ''
+                session.user.roles = user.roles as UserRole[]
             }
             return session
         },
     },
-    adapter: PrismaAdapter(prisma),
+    adapter,
     providers: [
         TwitterProvider({
             clientId: env.TWITTER_CLIENT_ID,

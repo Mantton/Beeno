@@ -1,7 +1,6 @@
 import { createRouter } from './context'
 import { z } from 'zod'
 import { createProtectedRouter } from './protected-router'
-import { resolve } from 'path'
 
 export const collectorRouter = createRouter().query('get', {
     input: z.string(),

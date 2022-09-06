@@ -95,7 +95,7 @@ model User {
 // * -- ROLES
 model Role {
     id          Int    @id @default(autoincrement())
-    title       String @db.VarChar(15)
+    title       String @unique @db.VarChar(15)
     description String @db.Text
     colorCode   String @db.VarChar(6)
 

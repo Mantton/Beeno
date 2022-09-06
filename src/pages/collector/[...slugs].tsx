@@ -80,15 +80,23 @@ const CollectorPage: NextPage = () => {
         return <div>Encountered an error {result.error.message}</div>
     }
     const account = result.data
-    const uploadImage = async (file: File): Promise<string> => {
+    const uploadImage = async (
+        file: File,
+        isBanner = true
+    ): Promise<string> => {
         const form = new FormData()
         form.append('file', file)
         const response = await (
-            await fetch(`${getBaseUrl()}/api/assets/upload`, {
-                credentials: 'include',
-                method: 'POST',
-                body: form,
-            })
+            await fetch(
+                `${getBaseUrl()}/api/assets/upload?type=${
+                    isBanner ? 'banner' : 'avatar'
+                }`,
+                {
+                    credentials: 'include',
+                    method: 'POST',
+                    body: form,
+                }
+            )
         ).json()
         return response.data.url
     }
@@ -97,7 +105,7 @@ const CollectorPage: NextPage = () => {
         try {
             // Upload Images
             if (avatarFile) {
-                const url = await uploadImage(avatarFile)
+                const url = await uploadImage(avatarFile, false)
                 await avatarMutator.mutateAsync(url)
             }
             if (bannerFile) {
@@ -115,7 +123,7 @@ const CollectorPage: NextPage = () => {
         setIsOpen(false)
     }
 
-    const isOwner = session.data?.user?.id === account?.id
+    const isOwner = session.data?.user && session.data.user.id === account?.id
     let bannerImage = account?.bannerImage
     const onFileChanged = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -144,9 +152,9 @@ const CollectorPage: NextPage = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <main className="flex-col">
+            <main className="min-h-screen relative flex-col">
                 <div
-                    className="h-48 bg-neutral-900"
+                    className="h-52 bg-neutral-900"
                     style={
                         {
                             backgroundImage:
@@ -158,10 +166,9 @@ const CollectorPage: NextPage = () => {
                         } as React.CSSProperties
                     }
                 ></div>
-
-                {account?.image && (
-                    <>
-                        <div className="absolute h-[125px] w-[125px]  border-4 inset-0 mx-8 top-48 rounded-full border-white">
+                <div className="absolute inset-0 top-32  h-[125px] w-[125px]  border-4 mx-8 rounded-full border-white bg-neutral-600">
+                    {account?.image && (
+                        <>
                             <Image
                                 src={account.image}
                                 alt="profile image"
@@ -169,205 +176,209 @@ const CollectorPage: NextPage = () => {
                                 height={125}
                                 className="rounded-full"
                             />
-                        </div>
-                    </>
-                )}
-                {isOwner && (
-                    <div className="mx-8 my-2 flex justify-end">
-                        <button
-                            className="font-medium text-xs border-2 py-1 px-2 border-neutral-800 rounded-3xl hover:text-white hover:bg-neutral-800 transition-colors hover:border-neutral-500"
-                            onClick={() => setIsOpen(true)}
-                        >
-                            Edit Profile
-                        </button>
+                        </>
+                    )}
+                </div>
 
-                        <Modal
-                            isOpen={isOpen}
-                            setIsOpen={setIsOpen}
-                            className="absolute w-2/3 bg-neutral-900 text-white rounded-md "
-                        >
-                            <div className="flex-col">
-                                <div className="flex justify-between items-center px-4 my-2">
-                                    <div className="flex gap-4 items-center">
-                                        <button
-                                            onClick={() => setIsOpen(false)}
-                                        >
-                                            <BiX size={'1.7rem'} />
-                                        </button>
-                                        <span className="font-medium">
-                                            Edit Profile
-                                        </span>
+                <div className="flex justify-between mt-12 mb-2 ml-8 mr-4">
+                    <div>
+                        <h1 className="font-bold text-2xl">
+                            {account?.name ?? 'Not Found'}
+                        </h1>
+                        {account?.handle && (
+                            <h2 className=" text-lg font-thin">
+                                @{account.handle}
+                            </h2>
+                        )}
+                    </div>
+                    {isOwner && (
+                        <div className="my-2 flex justify-end items-center">
+                            <button
+                                style={
+                                    {
+                                        borderWidth: '1.75px',
+                                    } as React.CSSProperties
+                                }
+                                className="h-7 font-medium text-xs px-2 border-neutral-800 rounded-3xl hover:text-white hover:bg-neutral-800 transition-colors hover:border-neutral-500"
+                                onClick={() => setIsOpen(true)}
+                            >
+                                Edit Profile
+                            </button>
+
+                            <Modal
+                                isOpen={isOpen}
+                                setIsOpen={setIsOpen}
+                                className="absolute w-2/3 bg-neutral-900 text-white rounded-md "
+                            >
+                                <div className="flex-col">
+                                    <div className="flex justify-between items-center px-4 my-2">
+                                        <div className="flex gap-4 items-center">
+                                            <button
+                                                onClick={() => setIsOpen(false)}
+                                            >
+                                                <BiX size={'1.7rem'} />
+                                            </button>
+                                            <span className="font-medium">
+                                                Edit Profile
+                                            </span>
+                                        </div>
                                     </div>
-                                    {/* <button
-                    onClick={() => {
-                      // TODO: Save
-                      setIsOpen(false);
-                    }}
-                  >
-                    <span className="px-2 py-1 rounded-xl bg-white text-black text-sm">
-                      Save
-                    </span>
-                  </button> */}
-                                </div>
-                                <form onSubmit={handleSubmit(onSubmit)}>
-                                    <div className="relative h-40 items-center justify-center">
+                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                        <div className="relative h-40 items-center justify-center">
+                                            <div
+                                                id="banner-image"
+                                                className={`h-40 bg-neutral-900`}
+                                                style={
+                                                    {
+                                                        backgroundImage:
+                                                            bannerImage &&
+                                                            `url(${bannerImage})`,
+                                                        backgroundPosition:
+                                                            'center',
+                                                        backgroundRepeat:
+                                                            'no-repeat',
+                                                        backgroundSize: 'cover',
+                                                        opacity: '0.7',
+                                                    } as React.CSSProperties
+                                                }
+                                            />
+                                            <div
+                                                className={clsx(
+                                                    'absolute inset-0',
+                                                    'h-full',
+                                                    'flex gap-4',
+                                                    'justify-center items-center '
+                                                )}
+                                            >
+                                                <label
+                                                    htmlFor="banner"
+                                                    className="bg-neutral-500/80 p-2 rounded-full items-center cursor-pointer"
+                                                >
+                                                    <BiCamera
+                                                        size={'1.5rem'}
+                                                        strokeWidth={'0.1'}
+                                                        className="text-white/70"
+                                                    />
+                                                    <input
+                                                        id="banner"
+                                                        type="file"
+                                                        hidden
+                                                        {...register('banner')}
+                                                        accept="image/png, image/jpeg, image/jpg"
+                                                        onChange={(e) =>
+                                                            onFileChanged(
+                                                                e,
+                                                                setBannerFile
+                                                            )
+                                                        }
+                                                    />
+                                                </label>
+                                                <div className="flex p-1 bg-neutral-500/80  rounded-full items-center  cursor-pointer">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            //
+                                                            bannerImage = null
+                                                            const element =
+                                                                document.getElementById(
+                                                                    'banner-image'
+                                                                ) as HTMLDivElement | null
+                                                            if (element)
+                                                                element.style.backgroundImage =
+                                                                    ''
+                                                        }}
+                                                    >
+                                                        <BiX
+                                                            size={'2rem'}
+                                                            strokeWidth={'0.1'}
+                                                            className="text-white/70"
+                                                        />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div
-                                            id="banner-image"
-                                            className={`h-40 bg-neutral-900`}
+                                            id="avatar-image"
                                             style={
                                                 {
                                                     backgroundImage:
-                                                        bannerImage &&
-                                                        `url(${bannerImage})`,
+                                                        account?.image
+                                                            ? `url(${account.image})`
+                                                            : undefined,
                                                     backgroundPosition:
                                                         'center',
                                                     backgroundRepeat:
                                                         'no-repeat',
                                                     backgroundSize: 'cover',
-                                                    opacity: '0.7',
                                                 } as React.CSSProperties
                                             }
-                                        />
-                                        <div
                                             className={clsx(
-                                                'absolute inset-0',
-                                                'h-full',
-                                                'flex gap-4',
-                                                'justify-center items-center '
+                                                'absolute inset-0 top-36',
+                                                'flex items-center justify-center',
+                                                'h-[100px] w-[100px]',
+                                                'rounded-full mx-8',
+                                                'border-4 border-neutral-900'
                                             )}
                                         >
-                                            <label
-                                                htmlFor="banner"
-                                                className="bg-neutral-500/80 p-2 rounded-full items-center cursor-pointer"
-                                            >
-                                                <BiCamera
-                                                    size={'1.5rem'}
-                                                    strokeWidth={'0.1'}
-                                                    className="text-white/70"
-                                                />
-                                                <input
-                                                    id="banner"
-                                                    type="file"
-                                                    hidden
-                                                    {...register('banner')}
-                                                    accept="image/png, image/jpeg, image/jpg"
-                                                    onChange={(e) =>
-                                                        onFileChanged(
-                                                            e,
-                                                            setBannerFile
-                                                        )
-                                                    }
-                                                />
-                                            </label>
-                                            <div className="flex p-1 bg-neutral-500/80  rounded-full items-center  cursor-pointer">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        //
-                                                        bannerImage = null
-                                                        const element =
-                                                            document.getElementById(
-                                                                'banner-image'
-                                                            ) as HTMLDivElement | null
-                                                        if (element)
-                                                            element.style.backgroundImage =
-                                                                ''
-                                                    }}
+                                            <div className="flex items-center justify-center">
+                                                <label
+                                                    htmlFor="avatar"
+                                                    className="bg-neutral-500/80 p-2 rounded-full  cursor-pointer "
                                                 >
-                                                    <BiX
-                                                        size={'2rem'}
+                                                    <BiCamera
+                                                        size={'1.5rem'}
                                                         strokeWidth={'0.1'}
                                                         className="text-white/70"
                                                     />
-                                                </button>
+                                                    <input
+                                                        id="avatar"
+                                                        type="file"
+                                                        hidden
+                                                        accept="image/png, image/jpeg, image/jpg"
+                                                        {...register('avatar')}
+                                                        onChange={(e) =>
+                                                            onFileChanged(
+                                                                e,
+                                                                setAvatarFile
+                                                            )
+                                                        }
+                                                    />
+                                                </label>
                                             </div>
                                         </div>
-                                    </div>
+                                        <div className="buffer h-16"></div>
 
-                                    <div
-                                        id="avatar-image"
-                                        style={
-                                            {
-                                                backgroundImage: account?.image
-                                                    ? `url(${account.image})`
-                                                    : undefined,
-                                                backgroundPosition: 'center',
-                                                backgroundRepeat: 'no-repeat',
-                                                backgroundSize: 'cover',
-                                            } as React.CSSProperties
-                                        }
-                                        className={clsx(
-                                            'absolute inset-0 top-36',
-                                            'flex items-center justify-center',
-                                            'h-[100px] w-[100px]',
-                                            'rounded-full mx-8',
-                                            'border-4 border-neutral-900'
-                                        )}
-                                    >
-                                        <div className="flex items-center justify-center">
-                                            <label
-                                                htmlFor="avatar"
-                                                className="bg-neutral-500/80 p-2 rounded-full  cursor-pointer "
-                                            >
-                                                <BiCamera
-                                                    size={'1.5rem'}
-                                                    strokeWidth={'0.1'}
-                                                    className="text-white/70"
-                                                />
+                                        <div className="mx-8">
+                                            <div>
+                                                <label
+                                                    htmlFor="name"
+                                                    className="block text-white text-sm font-bold mb-2"
+                                                >
+                                                    Name
+                                                </label>
                                                 <input
-                                                    id="avatar"
-                                                    type="file"
-                                                    hidden
-                                                    accept="image/png, image/jpeg, image/jpg"
-                                                    {...register('avatar')}
-                                                    onChange={(e) =>
-                                                        onFileChanged(
-                                                            e,
-                                                            setAvatarFile
-                                                        )
-                                                    }
+                                                    type="text"
+                                                    id="name"
+                                                    {...register('name')}
+                                                    placeholder={account?.name}
+                                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-white bg-neutral-900 border-1 border-white/30 leading-tight focus:outline-none focus:shadow-outline focus:border-white/50"
                                                 />
-                                            </label>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="buffer h-16"></div>
-
-                                    <div className="mx-8">
-                                        <div>
-                                            <label
-                                                htmlFor="name"
-                                                className="block text-white text-sm font-bold mb-2"
+                                        <div className="m-8 ">
+                                            <button
+                                                type="submit"
+                                                className="px-4 py-1 bg-white text-neutral-900 rounded-xl"
                                             >
-                                                Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="name"
-                                                {...register('name')}
-                                                placeholder={account?.name}
-                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-white bg-neutral-900 border-1 border-white/30 leading-tight focus:outline-none focus:shadow-outline focus:border-white/50"
-                                            />
+                                                Save
+                                            </button>
                                         </div>
-                                    </div>
-                                    <div className="m-8 ">
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-1 bg-white text-neutral-900 rounded-xl"
-                                        >
-                                            Save
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </Modal>
-                    </div>
-                )}
-
-                <div className="mt-8 mb-2 mx-8">
-                    <h1 className="font-bold text-2xl">
-                        {account?.name ?? 'Not Found'}
-                    </h1>
-                    <h2 className=" text-lg font-thin">@{account?.handle}</h2>
+                                    </form>
+                                </div>
+                            </Modal>
+                        </div>
+                    )}
                 </div>
 
                 <div className="border-2"></div>

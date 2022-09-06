@@ -21,7 +21,19 @@ const upload = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!session?.user) return res.status(401).send({ msg: 'Unauthorized' })
     const user = session.user
     const form = new formidable.IncomingForm()
+    const type = req.query.type
 
+    if (
+        !type ||
+        Array.isArray(type) ||
+        !['avatar', 'banner', 'card'].includes(type)
+    ) {
+        return res.status(400).send({ msg: 'bad request' })
+    }
+
+    if (type == 'card' && !user.roles?.some((v) => [1, 2].includes(v.roleId))) {
+        return res.status(403).send({ msg: 'Unauthorized' })
+    }
     form.parse(req, async (err, fields, files) => {
         const obj = files.file
         if (!obj) {
@@ -37,7 +49,7 @@ const upload = async (req: NextApiRequest, res: NextApiResponse) => {
         const { buffer } = fs.readFileSync(file.filepath)
 
         try {
-            const imageUrl = await uploadImage(buffer)
+            const imageUrl = await uploadImage(buffer, type)
             const image = await createImageRecord(imageUrl, user.id)
             res.send({
                 data: image,
@@ -53,7 +65,10 @@ const upload = async (req: NextApiRequest, res: NextApiResponse) => {
     // TODO: Authorization, Rate Limit
 }
 
-const uploadImage = async (buffer: ArrayBufferLike): Promise<string> =>
+const uploadImage = async (
+    buffer: ArrayBufferLike,
+    folder: string
+): Promise<string> =>
     new Promise<string>((resolve, reject) => {
         const storage = new Storage({
             projectId: env.GCS_PROJECT_ID,
@@ -64,7 +79,7 @@ const uploadImage = async (buffer: ArrayBufferLike): Promise<string> =>
         })
 
         const bucket = storage.bucket(env.GCS_BUCKET)
-        const fileName = `${uuidv4()}.png`
+        const fileName = `${folder}/${uuidv4()}.png`
         const blob = bucket.file(fileName)
         const blobStream = blob.createWriteStream({
             resumable: false,
