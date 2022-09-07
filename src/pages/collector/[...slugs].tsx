@@ -10,11 +10,8 @@ import { Modal } from '../../components/modal/modal'
 import { clsx } from 'clsx'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { IUseState } from '../../types/react'
-const getBaseUrl = () => {
-    if (typeof window !== 'undefined') return '' // browser should use relative url
-    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}` // SSR should use vercel url
-    return `http://localhost:${process.env.PORT ?? 3000}` // dev SSR should use localhost
-}
+import upload from '../../utils/image'
+
 type FormValues = {
     name?: string
     banner?: FileList
@@ -80,37 +77,17 @@ const CollectorPage: NextPage = () => {
         return <div>Encountered an error {result.error.message}</div>
     }
     const account = result.data
-    const uploadImage = async (
-        file: File,
-        isBanner = true
-    ): Promise<string> => {
-        const form = new FormData()
-        form.append('file', file)
-        const response = await (
-            await fetch(
-                `${getBaseUrl()}/api/assets/upload?type=${
-                    isBanner ? 'banner' : 'avatar'
-                }`,
-                {
-                    credentials: 'include',
-                    method: 'POST',
-                    body: form,
-                }
-            )
-        ).json()
-        return response.data.url
-    }
+
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
-        console.log(data)
         try {
             // Upload Images
             if (avatarFile) {
-                const url = await uploadImage(avatarFile, false)
-                await avatarMutator.mutateAsync(url)
+                const image = await upload(avatarFile, false)
+                await avatarMutator.mutateAsync(image.url)
             }
             if (bannerFile) {
-                const url = await uploadImage(bannerFile)
-                await bannerMutator.mutateAsync(url)
+                const image = await upload(bannerFile)
+                await bannerMutator.mutateAsync(image.url)
             }
 
             if (data.name) {

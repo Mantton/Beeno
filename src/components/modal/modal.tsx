@@ -46,7 +46,7 @@ export const Modal: React.FC<ComponentProps> = ({
                         leaveFrom="opacity-100 scale-100"
                         leaveTo="opacity-0 scale-95"
                     >
-                        <div className="fixed inset-0 flex items-center justify-center p-4">
+                        <div className="z-10 fixed inset-0 flex items-center justify-center p-4">
                             {/* Container to center the panel */}
                             <div className="flex min-h-full items-center justify-center">
                                 {/* The actual dialog panel  */}

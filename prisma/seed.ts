@@ -23,7 +23,7 @@ const data: Prisma.RoleCreateInput[] = [
 async function main() {
     console.log(`Start seeding ...`)
     // Roles
-    prisma.role.createMany({ data })
+    await prisma.role.createMany({ data })
     console.log(`Seeding finished.`)
 }
 

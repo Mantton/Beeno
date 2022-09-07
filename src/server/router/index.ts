@@ -4,6 +4,7 @@ import superjson from 'superjson'
 import { artistRouter } from './artist'
 import { collectorRouter, protectedCollectorRouter } from './collector'
 import { imageRouter } from './image'
+import { labelRouter } from './label'
 
 export const appRouter = createRouter()
     .transformer(superjson)
@@ -11,6 +12,7 @@ export const appRouter = createRouter()
     .merge('collector.', collectorRouter)
     .merge('protectedCollector.', protectedCollectorRouter)
     .merge('image.', imageRouter)
+    .merge('label.', labelRouter)
 
 // export type definition of API
 export type AppRouter = typeof appRouter
