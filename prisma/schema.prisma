@@ -154,6 +154,7 @@ model Group {
     eras    Era[]
     members GroupMember[]
 
+    @@unique([labelId, englishName])
     @@map("groups")
 }
 

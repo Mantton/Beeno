@@ -358,7 +358,7 @@ const CollectorPage: NextPage = () => {
                     )}
                 </div>
 
-                <div className="border-2"></div>
+                <div className="border-t-2"></div>
             </main>
         </>
     )

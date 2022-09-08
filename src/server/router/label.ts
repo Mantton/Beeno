@@ -12,6 +12,34 @@ export const labelRouter = createRouter()
             })
         },
     })
+    .query('unique', {
+        input: z.string(),
+        resolve: ({ ctx, input }) => {
+            return ctx.prisma.label.findUnique({
+                where: {
+                    id: input,
+                },
+                include: {
+                    bannerImage: true,
+                    logoImage: true,
+                },
+            })
+        },
+    })
+    .query('get.groups', {
+        input: z.string(),
+        resolve: ({ ctx, input }) => {
+            return ctx.prisma.group.findMany({
+                where: {
+                    labelId: input,
+                },
+                include: {
+                    bannerImage: true,
+                    logoImage: true,
+                },
+            })
+        },
+    })
     .mutation('update', {
         input: z.object({
             id: z.string(),
