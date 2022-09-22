@@ -93,28 +93,21 @@ model User {
     @@map("users")
 }
 
-// * -- ROLES
-model Role {
-    id          Int    @id @default(autoincrement())
-    title       String @unique @db.VarChar(15)
-    description String @db.Text
-    colorCode   String @db.VarChar(6)
-
-    users UserRole[]
-
-    @@map("roles")
+enum Role {
+    ADMIN
+    SENTINEL
+    PALADIN
 }
 
 // * -- USER-ROLES
 model UserRole {
     userId  String
-    roleId  Int
     granted DateTime @default(now())
 
-    role Role @relation(fields: [roleId], references: [id])
+    role Role
     user User @relation(fields: [userId], references: [id])
 
-    @@unique([userId, roleId])
+    @@unique([userId, role])
     @@map("user_roles")
 }
 

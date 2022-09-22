@@ -1,4 +1,5 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { Role } from '@prisma/client'
 import { prisma } from '../server/db/client'
 
 const adapter = PrismaAdapter(prisma)
@@ -12,21 +13,12 @@ adapter.createUser = async (data) => {
     })
     const userCount = await prisma.user.count()
     if (userCount <= 1) {
-        // First User, Give SuperUser role
-        const role = await prisma.role.findUnique({
-            where: {
-                title: 'Administrator',
+        await prisma.userRole.create({
+            data: {
+                userId: user.id,
+                role: Role.ADMIN,
             },
         })
-
-        if (role) {
-            await prisma.userRole.create({
-                data: {
-                    userId: user.id,
-                    roleId: role.id,
-                },
-            })
-        }
     }
     return user
 }

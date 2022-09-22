@@ -13,6 +13,7 @@ import { BiCamera, BiX } from 'react-icons/bi'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import upload from '../../utils/image'
 import slug from '../../utils/slug'
+import { isPaladin } from '../../utils/permissions'
 const ExploreCompaniesPage: NextPage = () => {
     const queryResult = trpc.useQuery(['label.get'])
     return (
@@ -53,9 +54,7 @@ type ImagedLabel = Label & {
 const Core: React.FC<{ labels: ImagedLabel[] }> = ({ labels }) => {
     const session = useSession()
     const user = session.data?.user
-    const canEdit = (user?.roles ?? []).some((role) =>
-        [1, 2, 3].includes(role.roleId)
-    )
+    const canEdit = isPaladin(user?.roles ?? [])
     const [presentInsertModal, setPresentInsertModal] = useState(false)
     return (
         <div className="container mx-auto my-4">
@@ -97,8 +96,7 @@ const Card: React.FC<CardProps> = ({ label }) => {
     const session = useSession()
     const [presentModal, setPresentModal] = useState(false)
 
-    const roles = (session.data?.user?.roles ?? []).map((v) => v.roleId)
-    const canEdit = roles.some((v) => [1, 2, 3].includes(v))
+    const canEdit = isPaladin(session.data?.user?.roles ?? [])
     return (
         <>
             <a href={`/label/${label.id}/${slug(label.name)}`}>

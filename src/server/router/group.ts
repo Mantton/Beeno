@@ -1,6 +1,7 @@
 import { createRouter } from './context'
 import { z } from 'zod'
 import { TRPCError } from '@trpc/server'
+import { isPaladin } from '../../utils/permissions'
 
 export const groupRouter = createRouter().mutation('create', {
     input: z.object({
@@ -16,9 +17,8 @@ export const groupRouter = createRouter().mutation('create', {
             throw new TRPCError({ code: 'UNAUTHORIZED' })
 
         // Has Permission
-        const roles = ctx.session.user.roles?.map((v) => v.roleId) ?? []
-        if (!roles.some((v) => v <= 3))
-            throw new TRPCError({ code: 'FORBIDDEN' })
+        const roles = ctx.session.user.roles ?? []
+        if (!isPaladin(roles)) throw new TRPCError({ code: 'FORBIDDEN' })
 
         const found = await ctx.prisma.group.findUnique({
             where: {

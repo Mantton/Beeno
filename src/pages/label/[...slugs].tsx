@@ -13,6 +13,7 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import upload from '../../utils/image'
 import slug from '../../utils/slug'
 import { useRouter } from 'next/router'
+import { isPaladin } from '../../utils/permissions'
 
 const LabelPage: NextPage = () => {
     const router = useRouter()
@@ -60,9 +61,7 @@ const Core: React.FC<{
 }> = ({ label }) => {
     const session = useSession()
     const [section, setSection] = useState(0)
-    const canEdit = (session.data?.user?.roles ?? [])
-        .map((v) => v.roleId)
-        .some((v) => v <= 3)
+    const canEdit = isPaladin(session.data?.user?.roles ?? [])
     return (
         <div className="h-full">
             <div

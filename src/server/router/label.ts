@@ -1,6 +1,7 @@
 import { createRouter } from './context'
 import { z } from 'zod'
 import { TRPCError } from '@trpc/server'
+import { isPaladin } from '../../utils/permissions'
 export const labelRouter = createRouter()
     .query('get', {
         resolve: async ({ ctx }) => {
@@ -53,9 +54,8 @@ export const labelRouter = createRouter()
                 throw new TRPCError({ code: 'UNAUTHORIZED' })
 
             // Has Permission
-            const roles = ctx.session.user.roles?.map((v) => v.roleId) ?? []
-            if (!roles.some((v) => [1, 2, 3].includes(v)))
-                throw new TRPCError({ code: 'FORBIDDEN' })
+            const roles = ctx.session.user.roles ?? []
+            if (!isPaladin(roles)) throw new TRPCError({ code: 'FORBIDDEN' })
             return ctx.prisma.label.update({
                 where: {
                     id: input.id,
@@ -76,9 +76,8 @@ export const labelRouter = createRouter()
                 throw new TRPCError({ code: 'UNAUTHORIZED' })
 
             // Has Permission
-            const roles = ctx.session.user.roles?.map((v) => v.roleId) ?? []
-            if (!roles.some((v) => [1, 2, 3].includes(v)))
-                throw new TRPCError({ code: 'FORBIDDEN' })
+            const roles = ctx.session.user.roles ?? []
+            if (!isPaladin(roles)) throw new TRPCError({ code: 'FORBIDDEN' })
             return await ctx.prisma.label.create({
                 data: {
                     name: input.name,

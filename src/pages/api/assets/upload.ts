@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import { Storage } from '@google-cloud/storage'
 import { env } from '../../../env/server.mjs'
 import { v4 as uuidv4 } from 'uuid'
+import { isSentinel } from '../../../utils/permissions'
 
 export const config = {
     api: {
@@ -31,7 +32,8 @@ const upload = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).send({ msg: 'bad request' })
     }
 
-    if (type == 'card' && !user.roles?.some((v) => [1, 2].includes(v.roleId))) {
+    const roles = user.roles ?? []
+    if (type == 'card' && !isSentinel(roles)) {
         return res.status(403).send({ msg: 'Unauthorized' })
     }
     form.parse(req, async (err, fields, files) => {
